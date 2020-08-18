@@ -3,6 +3,7 @@ package Set
 import scala.annotation.tailrec
 
 abstract class MySet[T] {
+  val length: Int
   val isEmpty: Boolean
   def apply(value: T): Boolean = contains(value)
   def contains(value: T): Boolean
@@ -10,7 +11,7 @@ abstract class MySet[T] {
   def ++ (values: MySet[T]): MySet[T]
   def - (value: T): MySet[T]
   def -- (values: MySet[T]): MySet[T]
-//  def & (value: MySet[T]): MySet[T]
+  def & (values: MySet[T]): MySet[T]
   def map[A](fn: T => A): MySet[A]
   def flatMap[A](fn: T => MySet[A]): MySet[A]
   def filter(fn: T => Boolean): MySet[T]
@@ -19,13 +20,14 @@ abstract class MySet[T] {
 }
 
 class EmptySet[T] extends MySet[T] {
-  val isEmpty = true
+  val length: Int = 0
+  val isEmpty: Boolean = true
   def contains(value: T): Boolean = false
   def + (value: T): MySet[T] = new ValuesSet[T](value, this)
   def ++ (values: MySet[T]): MySet[T] = values
   def - (value: T): MySet[T] = this
   def -- (values: MySet[T]): MySet[T] = this
-//  def & (value: MySet[T]): MySet[T] = this
+  def & (values: MySet[T]): MySet[T] = this
   def map[A](fn: T => A): MySet[A] = new EmptySet[A]
   def flatMap[A](fn: T => MySet[A]): MySet[A] = new EmptySet[A]
   def filter(fn: T => Boolean): MySet[T] = this
@@ -34,13 +36,14 @@ class EmptySet[T] extends MySet[T] {
 }
 
 class ValuesSet[T](head: T, tail: MySet[T]) extends MySet[T] {
-  val isEmpty = false
+  val length: Int = 1 + tail.length
+  val isEmpty: Boolean = false
   def contains(value: T): Boolean = if(head == value) true else tail.contains(value)
   def + (value: T): MySet[T] = if(contains(value)) this else new ValuesSet[T](value, this)
   def ++ (values: MySet[T]): MySet[T] = new ValuesSet[T](head, tail ++ values)
   def - (value: T): MySet[T] = filter(x => !contains(x))
   def -- (values: MySet[T]): MySet[T] = filter(x => values.contains(x))
-//  def & (value: MySet[T]): MySet[T]
+  def & (values: MySet[T]): MySet[T] = filter(x => values.contains(x))
   def map[A](fn: T => A): MySet[A] = new ValuesSet[A](fn(head), tail.map(fn))
   def flatMap[A](fn: T => MySet[A]): MySet[A] = fn(head) ++ tail.flatMap(fn)
   def filter(fn: T => Boolean): MySet[T] = {
@@ -56,13 +59,14 @@ class ValuesSet[T](head: T, tail: MySet[T]) extends MySet[T] {
 }
 
 class PredicateSet[T](predicateSet: T => Boolean) extends MySet[T] {
-  val isEmpty = false
+  val length: Int = Double.PositiveInfinity.toInt
+  val isEmpty: Boolean = false
   def contains(value: T): Boolean = predicateSet(value)
   def + (value: T): MySet[T] = new PredicateSet[T](x => predicateSet(x) || x == value)
   def ++ (values: MySet[T]): MySet[T] = new PredicateSet[T](x => predicateSet(x) || values.contains(x))
   def - (value: T): MySet[T] = new PredicateSet[T](x => x != value && predicateSet(x))
   def -- (values: MySet[T]): MySet[T] = new PredicateSet[T](x => !values.contains(x) && predicateSet(x))
-//  def & (value: MySet[T]): MySet[T]
+  def & (values: MySet[T]): MySet[T] = values.filter(contains)
   def map[A](fn: T => A): MySet[A] = throw new RuntimeException("Can't map a negated (infinite) set")
   def flatMap[A](fn: T => MySet[A]): MySet[A] = throw new RuntimeException("Can't map a negated (infinite) set")
   def filter(fn: T => Boolean): MySet[T] = new PredicateSet[T](x => fn(x) && predicateSet(x))

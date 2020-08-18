@@ -20,6 +20,8 @@ object MySetTests extends App {
   (set - 5).forEach(x => print(x + " "))
   println("\nMinus Set")
   (set -- setAlt).forEach(x => print(x + " "))
+  println("\n&Operator")
+  (set & setAlt).forEach(x => print(x + " "))
   println("\nMAP")
   set.map(_*2).forEach(x => print(x + " "))
   println("\nFLATMAP")
@@ -38,4 +40,6 @@ object MySetTests extends App {
   println(setOfThrees(3))
   println("setOfThrees contains 10")
   println((setOfThrees + 10)(9))
+  println("& an infinite set")
+  (setOfThrees & setAlt).forEach(x => print(x + " "))
 }
