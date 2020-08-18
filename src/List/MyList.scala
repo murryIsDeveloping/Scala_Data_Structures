@@ -5,8 +5,6 @@ import scala.annotation.tailrec
 abstract class MyList[T] {
   val isEmpty: Boolean
   val length: Int
-  val head: T
-  val tail: MyList[T]
   def apply(index: Int): T
   def + (elem: T): MyList[T]
   def ++ (elems: MyList[T]): MyList[T]
@@ -16,13 +14,12 @@ abstract class MyList[T] {
   def filter(predicate: T => Boolean): MyList[T]
   def forEach(fn: T => Unit): Unit
   def reverse() : MyList[T]
+  def sort(fn: (T,T) => Int): MyList[T]
 }
 
 class EmptyList[T] extends MyList[T] {
   val isEmpty: Boolean = true
   val length = 0
-  val head: T = throw new NoSuchElementException()
-  val tail: MyList[T] = throw new NoSuchElementException()
   def apply(index: Int): T = throw new IndexOutOfBoundsException()
   def + (elem: T): MyList[T] = new ValueList[T](elem, this)
   def ++ (elems: MyList[T]): MyList[T] = elems
@@ -31,10 +28,11 @@ class EmptyList[T] extends MyList[T] {
   def flatMap[B](fn: T => MyList[B]) = new EmptyList[B]
   def filter(predicate: T => Boolean): MyList[T] = this
   def forEach(fn: T => Unit): Unit = ()
-  def reverse() : MyList[T] = this
+  def reverse(): MyList[T] = this
+  def sort(fn: (T,T) => Int): MyList[T] = this
 }
 
-class ValueList[T](val head: T, val tail: MyList[T]) extends MyList[T] {
+class ValueList[T](head: T, tail: MyList[T]) extends MyList[T] {
   val isEmpty: Boolean = false
   val length: Int = 1 + tail.length
   def apply(index: Int): T =
@@ -55,6 +53,12 @@ class ValueList[T](val head: T, val tail: MyList[T]) extends MyList[T] {
     tail.forEach(fn)
   }
   def reverse() : MyList[T] = tail.reverse() + head
+
+  def sort(fn: (T,T) => Int): MyList[T] = {
+    if(tail.isEmpty) this
+    else if(fn(head, apply(1)) >= 0) (tail + head).sort(fn)
+    else new ValueList[T](head, tail.sort(fn))
+  }
 }
 
 object MyList {

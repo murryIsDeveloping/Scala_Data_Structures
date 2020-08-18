@@ -1,7 +1,7 @@
 package List
 
 object MyListTests extends App {
-  val list: MyList[Int] = MyList(1,2,3)
+  val list: MyList[Int] = MyList(1,2,3,5,4,6,2)
   val altList: MyList[Int] = MyList(10,20,30)
   println("Empty: " + MyList().isEmpty)
   println("Empty: " + list.isEmpty)
@@ -22,6 +22,6 @@ object MyListTests extends App {
   list.filter(_%2 == 0).forEach(println)
   println("REVERSE")
   list.reverse().forEach(println)
-
-
+  println("SORT")
+  list.sort((a,b) => b-a).forEach(println)
 }
