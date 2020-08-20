@@ -2,34 +2,34 @@ package List
 
 import scala.annotation.tailrec
 
-abstract class MyList[T] {
+abstract class MyList[+T] {
   val isEmpty: Boolean
   val length: Int
   def apply(index: Int): T
-  def + (elem: T): MyList[T]
-  def ++ (elems: MyList[T]): MyList[T]
-  def - (elem: T): MyList[T]
-  def map[B](fn: T => B): MyList[B]
-  def flatMap[B](fn: T => MyList[B]): MyList[B]
+  def + [B >: T](elem: B): MyList[B]
+  def ++ [B >: T](elems: MyList[B]): MyList[B]
+  def - [B >: T](elem: B): MyList[T]
+  def map[B >: T](fn: T => B): MyList[B]
+  def flatMap[B >: T](fn: T => MyList[B]): MyList[B]
   def filter(predicate: T => Boolean): MyList[T]
   def forEach(fn: T => Unit): Unit
   def reverse() : MyList[T]
   def sort(fn: (T,T) => Int): MyList[T]
 }
 
-class EmptyList[T] extends MyList[T] {
+case object EmptyList extends MyList[Nothing] {
   val isEmpty: Boolean = true
   val length = 0
-  def apply(index: Int): T = throw new IndexOutOfBoundsException()
-  def + (elem: T): MyList[T] = new ValueList[T](elem, this)
-  def ++ (elems: MyList[T]): MyList[T] = elems
-  def - (elem: T): MyList[T] = this
-  def map[B](fn: T => B) = new EmptyList[B]
-  def flatMap[B](fn: T => MyList[B]) = new EmptyList[B]
-  def filter(predicate: T => Boolean): MyList[T] = this
-  def forEach(fn: T => Unit): Unit = ()
-  def reverse(): MyList[T] = this
-  def sort(fn: (T,T) => Int): MyList[T] = this
+  def apply(index: Int): Nothing = throw new IndexOutOfBoundsException()
+  def +[B >: Nothing](elem: B): MyList[B] = new ValueList[B](elem, this)
+  def ++[B >: Nothing](elems: MyList[B]): MyList[B] = elems
+  def -[B >: Nothing](elem: B): MyList[Nothing] = this
+  def flatMap[B >: Nothing](fn: Nothing => MyList[B]): MyList[B] = this
+  def map[B >: Nothing](fn: Nothing => B): MyList[B] = this
+  def filter(predicate: Nothing => Boolean): MyList[Nothing] = this
+  def forEach(fn: Nothing => Unit): Unit = ()
+  def reverse(): MyList[Nothing] = this
+  def sort(fn: (Nothing,Nothing) => Int): MyList[Nothing] = this
 }
 
 class ValueList[T](head: T, tail: MyList[T]) extends MyList[T] {
@@ -39,11 +39,11 @@ class ValueList[T](head: T, tail: MyList[T]) extends MyList[T] {
     if(index < 0) throw new IndexOutOfBoundsException()
     else if(index == 0) head
     else tail(index-1)
-  def + (elem: T): MyList[T]  = new ValueList(head, tail + elem)
-  def ++ (elems: MyList[T]): MyList[T] = new ValueList[T](head, tail ++ elems)
-  def - (elem: T): MyList[T] = if(head == elem) tail else new ValueList(head, tail - elem)
-  def map[B](fn: T => B): MyList[B] = new ValueList(fn(head), tail.map(fn))
-  def flatMap[B](fn: T => MyList[B]): MyList[B] = fn(head) ++ tail.flatMap(fn)
+  def +[B >: T](elem: B): MyList[B] = new ValueList(head, tail + elem)
+  def ++[B >: T](elems: MyList[B]): MyList[B] = new ValueList[B](head, tail ++ elems)
+  def -[B >: T](elem: B): MyList[T] = if(head == elem) tail else new ValueList(head, tail - elem)
+  def map[B >: T](fn: T => B): MyList[B] = new ValueList(fn(head), tail.map(fn))
+  def flatMap[B >: T](fn: T => MyList[B]): MyList[B] = fn(head) ++ tail.flatMap(fn)
   def filter(predicate: T => Boolean): MyList[T] = {
     val filteredTail = tail.filter(predicate)
     if (predicate(head)) new ValueList(head, filteredTail) else filteredTail
@@ -62,12 +62,12 @@ class ValueList[T](head: T, tail: MyList[T]) extends MyList[T] {
 }
 
 object MyList {
-  def apply[T]() : MyList[T] = new EmptyList[T]
+  def apply[T]() : MyList[T] = EmptyList
   def apply[T](elems: T*): MyList[T] = {
     @tailrec
     def applyHelper(elements: Seq[T], list: MyList[T]): MyList[T] = {
       if (elements.isEmpty) list else applyHelper(elements.tail, list + elements.head)
     }
-    applyHelper(elems, new EmptyList[T])
+    applyHelper(elems, EmptyList)
   }
 }
