@@ -104,7 +104,7 @@ class EmptyTreeCons[T](implicit comparator: BinaryTreeSortOpts.BinaryTreeCompara
   def print(): String = ""
   def smallest() = throw new NoSuchMethodError()
   def largest() = throw new NoSuchMethodError()
-  def asSeq(): Seq[Nothing] = Seq().empty
+  def asSeq(): Seq[Nothing] = Seq()
 
   def map[B](fn: T => B)(implicit comparator: BinaryTreeSortOpts.BinaryTreeComparator[B]): BinaryTree[B] = new EmptyTreeCons[B]()
   def flatMap[B](fn: T => BinaryTree[B])(implicit comparator: BinaryTreeSortOpts.BinaryTreeComparator[B]): BinaryTree[B] = new EmptyTreeCons[B]()
